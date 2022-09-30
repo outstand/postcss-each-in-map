@@ -1,0 +1,52 @@
+{
+  "display_types": {
+    "None": "none",
+    "InlineBlock": "inline-block",
+    "InlineFlex": "inline-flex",
+    "Block": "block",
+    "Flex": "flex",
+    "Grid": "grid"
+  },
+  "direction_map": {
+    "X": [
+      "-left",
+      "-right"
+    ],
+    "Y": [
+      "-top",
+      "-bottom"
+    ],
+    "A": "",
+    "T": "-top",
+    "B": "-bottom",
+    "L": "-left",
+    "R": "-right"
+  },
+  "graph_parts": {
+    "opt-outs": [
+      "$mango_tango",
+      "52px",
+      "top"
+    ],
+    "clicks": [
+      "var(--color-a11y-blue)",
+      "36px",
+      "bottom"
+    ],
+    "opens": [
+      "$funk",
+      "35px",
+      "top"
+    ],
+    "bounces": [
+      "$agrellan_badland",
+      "49px",
+      "bottom"
+    ],
+    "unactioned": [
+      "$hint_of_mauve_pansy",
+      "auto",
+      "bottom"
+    ]
+  }
+}

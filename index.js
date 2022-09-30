@@ -1,53 +1,59 @@
-const path = require('path');
+const path = require('path')
 const { readFileSync } = require('fs')
 
-const SEPARATOR = /\s+in\s+/;
+const SEPARATOR = /\s+in\s+/
 
-function checkParams(params) {
-  if (!SEPARATOR.test(params)) return 'Missed "in" keyword in @each-in-map';
+function checkParams (params) {
+  if (!SEPARATOR.test(params)) return 'Missed "in" keyword in @each-in-map'
 
-  const [names, map] = params.split(SEPARATOR).map(str => str.trim());
+  const [names, map] = params.split(SEPARATOR).map(str => str.trim())
 
-  if (!names.match(/\$[_a-zA-Z]?\w+/)) return 'Missed variable names in @each-in-map';
-  if (!map.match(/(\w+\s?)+/)) return 'Missed map in @each-in-map';
+  if (!names.match(/\$[_a-zA-Z]?\w+/)) return 'Missed variable names in @each-in-map'
+  if (!map.match(/(\w+\s?)+/)) return 'Missed map in @each-in-map'
 
-  return null;
+  return null
 }
 
-function tokenize(str, helpers) {
-  return helpers.postcss.list.comma(str).map(str => str.replace(/^\$/, ''));
+function tokenize (str, helpers) {
+  return helpers.postcss.list.comma(str).map(str => str.replace(/^\$/, ''))
 }
 
-function paramsList(params, helpers) {
-  let [names, map] = params.split(SEPARATOR).map(param => tokenize(param, helpers));
+function paramsList (params, helpers) {
+  const [names, map] = params.split(SEPARATOR).map(param => tokenize(param, helpers))
 
   return {
-    names: names,
+    names,
     keyName: names[0],
     valNames: names.slice(1),
-    map: map
-  };
+    map
+  }
 }
 
-function processRules(rule, params, helpers, maps) {
-  var map = maps[params.map[0]]
-
-  var numVals = params.valNames.length
-
-  var keys =
+function keysVals (map, numVals) {
+  const keys =
     Object.keys(map).flatMap(key => {
-      var length = 1
-      if (typeof(map[key]) === "object" && Array.isArray(map[key])) {
+      let length = 1
+      if (typeof (map[key]) === 'object' && Array.isArray(map[key])) {
         length = map[key].length - (numVals - 1)
       }
       return Array(length).fill(key)
     })
 
-  // [[1, 2, 3], [4, 5, 6], 7] -> [[1, 4, 7], [2, 5], [3, 6]]
+  const vals = [Object.values(map)]
 
-  var vals = Array.from(Array(numVals), () => new Array())
+  return {
+    keys,
+    vals
+  }
+}
+
+// [[1, 2, 3], [4, 5, 6], 7] -> [[1, 4, 7], [2, 5], [3, 6]]
+function keysValsForDestructuring (map, numVals) {
+  const keys = Object.keys(map)
+
+  const vals = Array.from(Array(numVals), () => new Array())
   Object.values(map).forEach(value => {
-    if (typeof(value) === "object" && Array.isArray(value)) {
+    if (typeof (value) === 'object' && Array.isArray(value)) {
       value.forEach((v, i) => {
         if (i < numVals) {
           vals[i].push(v)
@@ -58,24 +64,47 @@ function processRules(rule, params, helpers, maps) {
     }
   })
 
-  var valsString = vals.map(v => `(${v})`).join(', ')
-  var at_rule = helpers.postcss.atRule({
-    name: "each",
+  return {
+    keys,
+    vals
+  }
+}
+
+function processRules (rule, params, helpers, maps) {
+  const map = maps[params.map[0]]
+  console.log('map', map)
+
+  console.log('params', params)
+  const numVals = params.valNames.length
+  console.log('numVals', numVals)
+
+  if (numVals > 1) {
+    var { keys, vals } = keysValsForDestructuring(map, numVals)
+  } else {
+    var { keys, vals } = keysVals(map, numVals)
+  }
+
+  console.log('keys', keys)
+  console.log('vals', vals)
+
+  const valsString = vals.map(v => `(${v})`).join(', ')
+  const atRule = helpers.postcss.atRule({
+    name: 'each',
     params: `${params.names.map(param => `$${param}`).join(', ')} in (${keys}), ${valsString}`,
     source: rule.source
   })
 
-  at_rule.append(rule.nodes)
-  rule.replaceWith(at_rule)
+  atRule.append(rule.nodes)
+  rule.replaceWith(atRule)
 }
 
-function each_in_map(rule, helpers, maps) {
-  const params  = ` ${rule.params} `;
-  const error   = checkParams(params);
-  if (error) throw rule.error(error);
+function eachInMap (rule, helpers, maps) {
+  const params = ` ${rule.params} `
+  const error = checkParams(params)
+  if (error) throw rule.error(error)
 
-  const parsedParams = paramsList(params, helpers);
-  processRules(rule, parsedParams, helpers, maps);
+  const parsedParams = paramsList(params, helpers)
+  processRules(rule, parsedParams, helpers, maps)
   rule.remove()
 }
 
@@ -85,8 +114,8 @@ function each_in_map(rule, helpers, maps) {
 module.exports = (opts = {}) => {
   opts = {
     basePath: process.cwd(),
-    jsonPath: "maps.json",
-    ...opts,
+    jsonPath: 'maps.json',
+    ...opts
   }
 
   if (!path.isAbsolute(opts.basePath)) {
@@ -95,21 +124,19 @@ module.exports = (opts = {}) => {
 
   opts.jsonPath = path.resolve(opts.basePath, opts.jsonPath)
 
+  let maps = {}
+
   return {
     postcssPlugin: 'postcss-each-in-map',
-    prepare() {
-      let maps = {}
-
-      return {
-        Once(root) {
-          let content = readFileSync(opts.jsonPath)
-          maps = JSON.parse(content)
-        },
-        AtRule: {
-          'each-in-map': (node, helpers) => {
-            each_in_map(node, helpers, maps)
-          }
-        }
+    Once (root) {
+      console.log('each-in-map once')
+      const content = readFileSync(opts.jsonPath)
+      maps = JSON.parse(content)
+    },
+    AtRule: {
+      'each-in-map': (node, helpers) => {
+        console.log('each-in-map atrule')
+        eachInMap(node, helpers, maps)
       }
     }
   }
