@@ -72,20 +72,13 @@ function keysValsForDestructuring (map, numVals) {
 
 function processRules (rule, params, helpers, maps) {
   const map = maps[params.map[0]]
-  console.log('map', map)
-
-  console.log('params', params)
   const numVals = params.valNames.length
-  console.log('numVals', numVals)
 
   if (numVals > 1) {
     var { keys, vals } = keysValsForDestructuring(map, numVals)
   } else {
     var { keys, vals } = keysVals(map, numVals)
   }
-
-  console.log('keys', keys)
-  console.log('vals', vals)
 
   const valsString = vals.map(v => `(${v})`).join(', ')
   const atRule = helpers.postcss.atRule({
@@ -129,13 +122,11 @@ module.exports = (opts = {}) => {
   return {
     postcssPlugin: 'postcss-each-in-map',
     Once (root) {
-      console.log('each-in-map once')
       const content = readFileSync(opts.jsonPath)
       maps = JSON.parse(content)
     },
     AtRule: {
       'each-in-map': (node, helpers) => {
-        console.log('each-in-map atrule')
         eachInMap(node, helpers, maps)
       }
     }
