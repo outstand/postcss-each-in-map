@@ -39,22 +39,18 @@ it('iterates through a map with multiple values per key', async () => {
   await run(
     dedent`
     @each $space, $space-index in 0, 5px, 10px, 15px, 30px, 45px, 60px {
-      @each-in-map $direction, $direction-attributes in direction_map {
+      @each-in-map $direction, $direction-attribute in direction_map {
         $(direction)$(space-index) {
-          @each $direction-attribute in $direction-attributes {
-            $(direction-attribute): $space !important;
-          }
+          $(direction-attribute): $space !important;
         }
       }
     }
     `,
     dedent`
     @each $space, $space-index in 0, 5px, 10px, 15px, 30px, 45px, 60px {
-      @each $direction, $direction-attributes in (X, X, Y, Y, A, T, B, L, R), (-left, -right, -top, -bottom, , -top, -bottom, -left, -right) {
+      @each $direction, $direction-attribute in (X, X, Y, Y, A, T, B, L, R), (-left, -right, -top, -bottom, , -top, -bottom, -left, -right) {
         $(direction)$(space-index) {
-          @each $direction-attribute in $direction-attributes {
-            $(direction-attribute): $space !important;
-          }
+          $(direction-attribute): $space !important;
         }
       }
     }

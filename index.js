@@ -1,5 +1,6 @@
 const path = require('path')
 const { readFileSync } = require('fs')
+var log = require('loglevel').getLogger('postcss-each-map')
 
 const SEPARATOR = /\s+in\s+/
 
@@ -30,6 +31,8 @@ function paramsList (params, helpers) {
 }
 
 function keysVals (map, numVals) {
+  log.debug('keysVals', map, numVals)
+
   const keys =
     Object.keys(map).flatMap(key => {
       let length = 1
@@ -49,6 +52,8 @@ function keysVals (map, numVals) {
 
 // [[1, 2, 3], [4, 5, 6], 7] -> [[1, 4, 7], [2, 5], [3, 6]]
 function keysValsForDestructuring (map, numVals) {
+  log.debug('keysValsForDestructuring', map, numVals)
+
   const keys = Object.keys(map)
 
   const vals = Array.from(Array(numVals), () => new Array())
@@ -81,6 +86,8 @@ function valsAsString (vals) {
 }
 
 function processRules (rule, params, helpers, maps) {
+  log.debug('processRules', params)
+
   const map = maps[params.map[0]]
   const numVals = params.valNames.length
 
@@ -90,17 +97,25 @@ function processRules (rule, params, helpers, maps) {
     var { keys, vals } = keysVals(map, numVals)
   }
 
+  log.debug('(processRules) keys:', keys)
+  log.debug('(processRules) vals:', vals)
+  log.debug('(processRules) valsAsString:', valsAsString(vals))
+
   const atRule = helpers.postcss.atRule({
     name: 'each',
     params: `${params.names.map(param => `$${param}`).join(', ')} in (${keys.join(', ')}), ${valsAsString(vals)}`,
     source: rule.source
   })
 
+  log.info(atRule.toString())
+
   atRule.append(rule.nodes)
   rule.replaceWith(atRule)
 }
 
 function eachInMap (rule, helpers, maps) {
+  log.debug('eachInMap', rule.params)
+
   const params = ` ${rule.params} `
   const error = checkParams(params)
   if (error) throw rule.error(error)
@@ -117,14 +132,19 @@ module.exports = (opts = {}) => {
   opts = {
     basePath: process.cwd(),
     jsonPath: 'maps.json',
+    logLevel: 'warn',
     ...opts
   }
+
+  log.setLevel(opts.logLevel)
 
   if (!path.isAbsolute(opts.basePath)) {
     opts.basePath = path.join(process.cwd(), opts.basePath)
   }
 
   opts.jsonPath = path.resolve(opts.basePath, opts.jsonPath)
+
+  log.debug('opts', opts)
 
   let maps = {}
 
@@ -133,6 +153,7 @@ module.exports = (opts = {}) => {
     Once (root) {
       const content = readFileSync(opts.jsonPath)
       maps = JSON.parse(content)
+      log.debug('Loaded maps:', maps)
     },
     AtRule: {
       'each-in-map': (node, helpers) => {
