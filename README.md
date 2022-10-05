@@ -142,17 +142,10 @@ Example json:
 **Step 1:** Install plugin:
 
 ```sh
-npm install --save-dev postcss postcss-each-in-map
+npm install --save-dev postcss postcss-each-in-map postcss-each
 ```
 
-**Step 2:** Check you project for existed PostCSS config: `postcss.config.js`
-in the project root, `"postcss"` section in `package.json`
-or `postcss` in bundle config.
-
-If you do not use PostCSS, add it according to [official docs]
-and set this plugin in settings.
-
-**Step 3:** Add the plugin to plugins list:
+**Step 2:** Add the plugin to the plugins list:
 
 ```diff
 module.exports = {
@@ -164,4 +157,25 @@ module.exports = {
 }
 ```
 
-[official docs]: https://github.com/postcss/postcss#usage
+### Options
+
+```javascript
+require('postcss-each-in-map')({
+  basePath: 'app/assets/json',
+  jsonPath: 'maps.json'
+})
+```
+
+#### `basePath`
+
+Type: `String`
+Default: `process.cwd()`
+
+Location to look for map json. Can be either relative or absolute.
+
+#### `jsonPath`
+
+Type: `String`
+Default: `'maps.json'`
+
+Name (or path) relative to the `basePath` to find the map json file.
