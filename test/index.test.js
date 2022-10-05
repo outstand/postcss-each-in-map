@@ -22,7 +22,7 @@ it('iterates through a basic map', async () => {
     `,
     `
     .u-display {
-      @each $display-name, $display-type in (None,InlineBlock,InlineFlex,Block,Flex,Grid), (none,inline-block,inline-flex,block,flex,grid) {
+      @each $display-name, $display-type in (None, InlineBlock, InlineFlex, Block, Flex, Grid), (none, inline-block, inline-flex, block, flex, grid) {
         &$(display-name) {
           display: $display-type;
         }
@@ -50,7 +50,7 @@ it('iterates through a map with multiple values per key', async () => {
     `,
     dedent`
     @each $space, $space-index in 0, 5px, 10px, 15px, 30px, 45px, 60px {
-      @each $direction, $direction-attributes in (X,X,Y,Y,A,T,B,L,R), (-left,-right,-top,-bottom,,-top,-bottom,-left,-right) {
+      @each $direction, $direction-attributes in (X, X, Y, Y, A, T, B, L, R), (-left, -right, -top, -bottom, , -top, -bottom, -left, -right) {
         $(direction)$(space-index) {
           @each $direction-attribute in $direction-attributes {
             $(direction-attribute): $space !important;
@@ -82,7 +82,7 @@ it('iterates through a map while destructuring values from an array', async () =
     }
     `,
     dedent`
-    @each $class, $background, $label_width in (opt-outs,clicks,opens,bounces,unactioned), ($mango_tango,var(--color-a11y-blue),$funk,$agrellan_badland,$hint_of_mauve_pansy), (52px,36px,35px,49px,auto) {
+    @each $class, $background, $label_width in (opt-outs, clicks, opens, bounces, unactioned), ($mango_tango, var(--color-a11y-blue), $funk, $agrellan_badland, $hint_of_mauve_pansy), (52px, 36px, 35px, 49px, auto) {
       $(class) {
         .metrics-graph-part-number:before {
           background: $background;

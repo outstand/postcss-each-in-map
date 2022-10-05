@@ -70,6 +70,16 @@ function keysValsForDestructuring (map, numVals) {
   }
 }
 
+function valsAsString (vals) {
+  return vals.map(v => {
+    if (typeof v === 'object' && Array.isArray(v)) {
+      return `(${v.flat().join(', ')})`
+    }
+
+    return `(${v})`
+  }).join(', ')
+}
+
 function processRules (rule, params, helpers, maps) {
   const map = maps[params.map[0]]
   const numVals = params.valNames.length
@@ -80,10 +90,9 @@ function processRules (rule, params, helpers, maps) {
     var { keys, vals } = keysVals(map, numVals)
   }
 
-  const valsString = vals.map(v => `(${v})`).join(', ')
   const atRule = helpers.postcss.atRule({
     name: 'each',
-    params: `${params.names.map(param => `$${param}`).join(', ')} in (${keys}), ${valsString}`,
+    params: `${params.names.map(param => `$${param}`).join(', ')} in (${keys.join(', ')}), ${valsAsString(vals)}`,
     source: rule.source
   })
 
