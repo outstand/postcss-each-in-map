@@ -158,7 +158,8 @@ module.exports = {
 ```javascript
 require('postcss-each-in-map')({
   basePath: 'app/assets/json',
-  jsonPath: 'maps.json'
+  jsonPath: 'maps.json',
+  logLevel: 'info',
 })
 ```
 
@@ -175,3 +176,10 @@ Type: `String`
 Default: `'maps.json'`
 
 Name (or path) relative to the `basePath` to find the map json file.
+
+#### `logLevel`
+
+Type: `String`
+Default: `'warn'`
+
+Log level (from https://github.com/pimterry/loglevel) for this plugin.
